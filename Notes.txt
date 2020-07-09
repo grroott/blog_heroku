@@ -1,0 +1,194 @@
+
+########################## Getting Started ##########################
+
+--> django-admin: This command will give the other available commands.
+--> To create a new project: django-admin startproject django-project
+This will create below folders/files,
+manage.py	==> This is how our web applicaion can be used through command line interface.
+__init__.py	==> This is the empty file, used for python identifying it as a python package.
+settings.py	==> This file contains all the config settings such as apps, debug, DB,security key, etc.
+urls.py		==> This file contains the url mapping of the website.
+wsgi.py		==> Web application and web server communicates through this file.
+asgi.py		==> 
+--> To start the server, python manage.py runserver. The server will be up & application will be available in 127.0.0.1:8000 or localhost:8000.
+--> By default, the admin page is configured in django & can be accessed through localhost:8000/admin. But there is no default credentials & it should be configured.
+
+########################## Applications and Routes ##########################
+
+--> To create a app: python manage.py startapp blog
+--> urls.py file needs to be created within the app folder (This will not be created by default). 
+--> To create the simple web page, the logic is,
+User --> project url --> app url -->views.py
+--> In views.py file, the HttpResponse has to be imported from dango.http & the function should accept request & return http response.
+--> In app urls.py file,  1)url as string 2) module.function_name it has to be referred 3) any unique name
+--> In project urls.py file, the include function has to be imported from django.urls & the url matching shoulg go to include function (app url in string)
+--> It is always better to use trailing slash in urls.
+
+########################## Templates ##########################
+
+--> Tempates folder should be created under applicaion. Inside the templates folder, another folder should be created with app name.Below are the Django convention for templates structure.
+blog -> templates -> blog -> html files
+--> In order to Django recognises templates & Databases, the Class in apps.py file should be pointed in installed apps section in settings.py file. Format: 'app_name.file_name(apps).class_name_in_apps.py_file'
+--> To map templates folder with views.py file, render function can be used. render function returns same HttpResponse by taking 3 arguments such as request, 'app_name_in_templates_folder/html_file' and name of the data dictionary.
+--> Create a tempory data by creating a list of dictionaries and also, create a dictionary within function & it contains the value as the variable of the temp data. Once this is set, the key name will be accebile with the data insite templates folder .
+--> Templating engine Django uses is Jinger2. To use any loops, 
+{% for i in x %}
+{{ i }}
+{% endfor %}
+The appropriate tags can be given.
+--> To use bootstrap, use CDN links in base.html so that it can take effect on complete website.
+--> To use css & JS files, create the folder in blog folder, then create a folder with the name of the app inside the static folder, then create files inside.
+--> To point the css files in base.html, create a code block on top with load static keyword. Then, in a link tag, open another code block, {% static "path" %}
+--> To use the dynamic urls in the headers, in a code block, pass the name that was created in function views.py file. {% url 'blog-home' %}
+
+########################## Admin page ##########################
+
+--> python manage.py makemigration & python manage.py migrate
+--> To create admin user: python manage.py createsuperuser 
+--> Django comes with inbuilt admin page.
+
+########################## Database and Migrations ##########################
+
+--> Django contains inbuilt ORM (Object Relational Mapper) whice means we no need to write a sql query separaely (will be done automatically).
+--> In models.py file in app folder, Each class created will be a table in DB. note: User table is created by default & import it from django.contrib.auth.models
+--> Crate a class which takes models.Model as a input parameter & each variable assigned will be a column in DB table.
+--> Few crieteria are CharField, TextField & DateTimeField and Foreign key can be set by mapping with other table.
+--> After running python manage.py makemigrations, "blog\migrations\0001_initial.py" one file will be created similar to this.
+--> To view SQL query corresponding to this class, use "python manage.py sqlmigrate blog 0001". Then, python manage.py migrate should be run.
+--> To open DB shell, python manage.py shell & import both User and Post.
+--> To view existing users, User.objects.all() -> This will return a query set. Other methods instead of all() are first() & last(). Also. filter(username='test') can be used. Also, it is possible to get data by column names like User.objects.set(id=1).
+--> TO create a post through DB shell,
+post_1 = Post(title='Blog 1', content='Test content for Blog 1!', author=user)
+To make this effect, run post_1.save() Note: This is similar to Commit key word in SQL after running update query. 
+--> If Post.objects.all() was run, it retuns with object. To make it configure properly, use __str__ method in models.py file. 
+--> To fetch all post written by user, user = User.objects.filter(username='Gokul').first()
+user.post_set.all() --> This will list all the post written by User.
+--> It is possible to create a post directly from here by user.post_set.create(title='Blog 3', content='Test content for Blog 3!'). NO need to run .save method for this.
+--> To use data from DB instead of temporary data, import the Post class from models.py firl in views.py & pass the query set inplace of value in dictionary.Then the temporary data can be removed.
+--> To add Post details in admin page, need to register in admin.py file in app folder. Import Post clσss from models file & TO register,
+admin.site.register(Post)
+
+########################## User Registration ##########################
+--> It is better to separate user regestration into separate app. Django has a built in form "UserCreationForm". It can be imported from django.contrib.auth.form.
+--> 1) Create a new app 
+2) Register it in settings.py
+3) Import UserCreationForm & create a object & return render with the third parameter as the object.
+4) Create a template/app folder & create html file.
+5) Map the views file in project urls.py.
+To map in urls.py, import views from users directly & use it.
+path('register/', views.register, name='register') Note: Now no need to create urls.py in app folder.
+--> To alter it properly form.as_p to wrap it in a paragraph tag. 
+--> Use {% csrf_token %} for security purpose.
+--> To make the website to take our input data, instead of just instantiating the "UserCreationForm", pass request.POST to it.
+--> To check whether the inputs are valid, nned to verify them. If it is success, to display a success message, import messages from django.contrib.
+--> To redirect the website after signing up, use redirect function from shortcut module.
+--> TO save all the changes to DB, use form.save().
+--> To display the alert, need to dynamically configure in base.html as well.
+--> To add extra fields in registration page (which is not available in "UserCreationForm" by default), need to create new form which inherits from "UserCreationForm".
+--> Create a file in users folder (forms.py) & create a class whice inherits from "UserCreationForm".
+--> Create a class Meta inside which has two fields. 1) models - which model is going to affected? 2)fields - list of all fileds in register page in order.
+--> Now, in views.py, instead of "UserCreationForm", use new form that has been created.
+--> To design registration page better, use Crispy forms. Pip install django-crispy-forms.
+--> Need to configure it in settings.py file in installed app section - "crispy_forms" & at the bottom - "CRISPY_TEMPLATE_PACK = 'bootstrap4'"
+--> In register.html file, load it by {% load crispy_forms_tags %} & instead of as_p, use | crispy to take effect. This will take care of better styling, muted text & better alerts.
+
+########################## Login and Logout System ##########################
+
+--> Django provides Login & Logout views by default but it does not provide template by default. So no need to create views for login & logout, only need to import in projects urls.py. Both are almost same.
+--> Import views from django.contrib.auth.
+--> LoginView & LogoutView are class based views instead of our previous funcction based views. BY default, it will look for the templates in "registration/login.html", to change them to our template location,
+path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login')
+--> To redirect to any url after login, add LOGIN_REDIRECT_URL = 'blog-home' in settings.py.
+--> Write the content to be displayed in logout.html file.
+--> To display the Login/logout button based on whether user is logged in or not, use user.authenticated method.
+--> To add profile page, just create a profile function in views.py file, configure it in project urls.py file & create a html file in template folder.
+--> To show only the personal information only after the user is logged in (Most of the websites are using this feature), Django has the inbuilt decorators for function based views.
+--> Import login_required from django.contrib.auth.decorators & use it for profile function. For Class based views, it will be differ.
+--> By default, Django looks for different url, to configure for login url, add LOGIN_URL = 'login' in project settings.py file.
+
+######################## User Profile and Picture ############################
+
+--> To elaborate the profile page, create a class in models.py file & establish a One to One relationship between user & profile.
+--> ImageField cab be used to display the image. __str__ method can be configured to show what we need to show.
+--> Pillow library is reqired to work with image.
+--> Run python manage.py makemigrations & python manage.py migrate files to take effect.
+--> To add profile into the admin page, register it in admin.py file using admin.site.register(Profile).
+--> A folder called profile_pics is created in root directory of the project.
+--> To change this folder from root directory of the project, few configurations has to be done in root directory of the website.
+--> MEDIA_ROOT should be added as where the profile should be stored & MEDIA_URL should be path it can be accessed in application.
+--> Now, folder called media is created in base directory & pics are stored here.
+--> To display the personal info & profile pics in profile page, modify the profile.html in templates folder. TO view the image, there are separate ways for Production & developement environment.
+--> Refer the documentation & modify the project urls.py file.
+--> For the profile which doesn't have the profile pic, it will look inside the media folder. If we drop a pic named default.jpg, it will be picked automatically.
+--> To create a profile automatically when new user was created, use Django signals.
+--> create signals.py file in user app folder & do the necessary imports & functions according to django documentation.
+--> add this signals in apps.py file according to documentation.
+
+############################  Update User Profile  #################################
+
+--> To edit the profile informations, need to create respective class in forms.py file.
+--> Need to create 2 classes: UserUpdateForm for editing user info & ProfileUpdateForm for updating profile pic.
+--> In views.py file, instantiate the forms created in forms.py file & pass it to the render function.
+--> Update in html files in templates folder. Need to put both forms separately so that it will apperar as single to user.
+--> Add enctype at the top to better handling of images.
+--> To populate current detail in profile update page, check if it is a valid POST request & pass instance=request.user. Also, Flash the sucess notification & redirect it to the current page. All logic should be written in views.py file.
+--> To reduce the size of image user's uplading, we need to override the save method in models.py file.
+--> To display the user profile pic in home page, write the logic in home.html in blog app.
+
+############################ Create, Update, and Delete Posts ########################
+
+--> Till now, we have been using Function based views, There is one more option called Function based views.
+--> Function based views offer much more inbuilt features.
+--> ListView, DetailView, UpdateView & DeleteView
+--> To use ListView in views.py instead of function based view, import django.views.generic import ListView
+--> Create a class which should inherits from ListView & set model which model to query when this view search for options.
+--> To make webpage use this class based view, in app urls.py file, use PostListView.as_type() instead of views.home. Instead of directly passing class name, use as_type().
+--> This still don't work yet, since Class based views looks for template with specific naming convention, to change it to look what we have created, use template_name to pass the path to our template.
+--> Now, the class based view pass the content to template with diffrent variabe name, to set it to our content , pass context_object_name as the content.
+--> To make all the blog contents to be shown in decending order, use ordering attribute. 
+--> Lets create DetailView as per django convention.
+--> Import DetailView & create a class that inherits from DetalView & create a instance model that mas Post.
+--> In project urls.py, use <pk> attribute, so that it redirects to that particular post.
+--> To create a html file in template folder. By default, Django looks for html files at  <app>/<model>_<viewtype>.html.
+--> In html file, as per django convention, it stores value in object keyword.
+--> To create a interface for user to create new posts, use CreateView.
+1) In views.py file, create a class that inherits from Createview & specify the model and fields.
+2) Map the url in urls.py file.
+3) Create post_form.html because it will be affected by updating post a well.
+4) use forms to display all the fields.
+5) To make the author as current logged In user & over rides the class before it submits, create a function in PostCreateView class & write the logic.
+6) In class based views, use reverse instead of redirect function. In model.py file, create get_absolute_url function that returns reverse with the path to be redirected as string.
+--> To create the post only after logging in, use LoginRequiredMixin that should ne imported from django.contrib.auth.mixins. In function based views, this can be  done by usage of decorators.
+--> To make the user to update the posts, use UpdateView. It is similar to the CreateView.
+--> To restrict theusers to update their posts only, import UserPassesTestMixin
+--> write the function that verifies whether the logged in user is the author of this post.
+--> Delete view is similar to UpdateView.
+1) Add a class in views.py file
+2) configure it in urls.py file
+3) write the front end logic in post_confirm_delete.html file.
+4) configure the success_url in view class so that it redirects after deletion.
+--> Finally, Add the necessary buttons in the front end so tha the users will be able to perform thses actions.
+
+######################################## Pagination #############################################
+
+--> To separate the posts by pages instead of posting in a single page.
+--> Import Paginator from django.core.paginator & call it by p = Paginator(posts, 2) Note: 2 is the no of post to be displayed in one page.
+--> p.page_range is the range specific to Paginator.
+--> p1= p.page(1) will return <Page 1 of 3>
+--> p1.number will return 1.
+--> pi.object_list will print all the content of that page.
+--> To check whether the specific page has previous or next pages, use p1.has_previous() & p1.has_next() and to get next page number, use p1.next_page_number().
+--> By default, class based views contains paginators. We can use it by setting the parameter paginate_by in our class.
+--> The above will display only one page & there is no buttons available to navigate to other pages. one way is editing url by /?page=5.
+--> To make the buttons available in home page, write the logic in home.html file. 
+--> To list all post by a author, create one view similar to PostListView.
+--> To query the user's post , use get_queryset function & write the logic.
+--> Also, use get_object_or_404 to return 404 error if user is no found & modify accordinglr in urls py file.
+--> Write front end logic in html file inside template directory.
+
+########################## Email and Password Reset #################################################
+
+--> Create a password reset directory in urls.py that imports from auth_views & create a front end page using forms in templates folder.
+--> After clicking reset button, it should be redirected to another page that is imported from PasswordResetDoneView.
+--> To configure smtp/Email settings, add few parameters in settings.py file. For email & passwords, store it in System's environemt variable and then access it using os.environ.get('key')
+--> Also, create password ret complete page that imports from PasswordResetCompleteView. 

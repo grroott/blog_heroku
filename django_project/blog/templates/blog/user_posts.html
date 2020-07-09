@@ -1,0 +1,95 @@
+{% extends "blog/base.html" %}
+{% block content %}
+
+    <div class="media media content-section">
+        <img class="rounded-circle account-img" src="{{ profile_info.image.url }}">
+        <div class="media-body">
+          <h2 class="account-heading">{{ profile_info.user }}</h2>
+          <p class="text-secondary">{{ profile_info.email }}</p>
+          <div class="profile-info">
+            {% if profile_info.followed.all.count == 0  %}
+              <p class="text-secondary"> <a href="#">
+              0 Follower
+              </a></p>
+            {% else %}
+              <p class="text-secondary"> <a href="{% url 'followers' profile_info.user %}">
+              {{ profile_info.followed.all.count }} Follower{{ profile_info.followed.all.count | pluralize}}
+              </a></p>
+            {% endif %}
+
+            {% if following.count == 0  %}
+              <p class="text-secondary"> <a href="#">
+              0 Following
+              </a></p>
+            {% else %}
+              <p class="text-secondary"> <a href="{% url 'following' profile_info.user %}">
+              {{ following.count }} Following
+              </a></p>
+            {% endif %}
+
+            {% if profile_likes == None or profile_likes == 0 %}
+              <p>0 like</p>
+            {% else %}
+              <p>{{ profile_likes }} Like{{ profile_likes | pluralize }}</p>
+            {% endif %}
+
+            <p class="text-secondary"><em>{{ profile_info.bio }}</em></p>
+            <div class="follow-section">
+              {% if profile_info != user.profile %}
+                {% include 'blog/follow_section.html' %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+    </div>
+  <p></p>
+
+    {% if posts %}
+      <h2 class="mb-3">Posts by {{ view.kwargs.username }} ({{ page_obj.paginator.count }})</h2>
+      {% for post in posts %}
+          <article class="media content-section">
+            <img class="rounded-circle article-img" src="{{ post.author.profile.image.url }}">
+            <div class="media-body">
+              <div class="article-metadata">
+                <a class="mr-2" data-toggle="tooltip" data-placement="top" title="View {{ post.author }}'s profile" href="{% url 'user-posts' post.author.username %}"><em>{{ post.author }}</em></a>
+                <small class="text-muted">{{ post.date_posted|date:"F d, Y" }}</small>
+              </div>
+              <h2><a data-toggle="tooltip" data-placement="top" title="View {{ post.title }} post" class="article-title" href="{% url 'post-detail' post.id %}">{{ post.title }}</a></h2>
+              <p class="article-content">{{ post.content | safe | truncatewords:"20" }}</p>
+              <a data-toggle="tooltip" data-placement="top" title="See full post" href="{% url 'post-detail' post.id %}"><u>See post</u></a>
+
+              {% if post.liked.all.count >= 2 %}
+                <p><strong><em>Like{{ post.liked.all.count | pluralize}}: {{ post.liked.all.count }}</em></strong></p>
+              {% else %}
+                <p><strong><em>Like: {{ post.liked.all.count }}</em></strong></p>
+              {% endif %}
+
+            </div>
+          </article>
+      {% endfor %}
+    {% else %}
+    <h2 class="mb-3">{{ profile_info.user }} does not have any posts!</h2>
+    {% endif %}
+    {% if is_paginated %}
+
+      {% if page_obj.has_previous %}
+        <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+      {% endif %}
+
+      {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+          <a class="btn btn-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+          <a class="btn btn-outline-info mb-4" href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
+        <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+      {% endif %}
+
+    {% endif %}
+{% endblock content %}
+
