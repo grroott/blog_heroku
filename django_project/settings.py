@@ -25,8 +25,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-DEBUG_PROPAGATE_EXCEPTIONS = True
+DEBUG = True
 
 # DEBUG = (os.environ.get('DEBUG_VALUE') == 'Tru')
 
@@ -157,7 +156,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_PASSWORD')
-
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 django_heroku.settings(locals())
